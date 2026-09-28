@@ -71,7 +71,8 @@ autoInstallPeers: false
 allowBuilds:
   esbuild: true
   '@clerk/shared': true
-
+  'browser-tabs-lock': true
+  'core-js': true
 onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
