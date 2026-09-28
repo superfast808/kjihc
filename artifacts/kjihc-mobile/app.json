@@ -1,0 +1,80 @@
+{
+  "expo": {
+    "name": "KJIHC",
+    "slug": "kjihc-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "kjihc-mobile",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#001f3d"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "org.kjihc.mobile"
+    },
+    "android": {
+      "package": "org.kjihc.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#001f3d"
+      },
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://replit.com/"
+        }
+      ],
+      "expo-font",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow KJIHC to access your photos to set your player's photo."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "packagingOptions": {
+              "exclude": [
+                "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+              ]
+            }
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "autolinking": {
+      "exclude": [
+        "@solana-mobile/mobile-wallet-adapter-protocol",
+        "@solana-mobile/wallet-adapter-mobile",
+        "@solana/wallet-adapter-base",
+        "@solana/wallet-adapter-react",
+        "@solana/wallet-standard-features",
+        "@solana/kit"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "93eefb97-eb98-4507-9046-ac9e822782f6"
+      }
+    },
+    "owner": "superfast808s-team"
+  }
+}

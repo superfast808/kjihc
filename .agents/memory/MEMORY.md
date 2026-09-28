@@ -1,0 +1,13 @@
+- [KJIHC App Architecture](kjihc-architecture.md) — Full-stack ice hockey club app: React/Vite frontend, Express API, Drizzle/Postgres, Clerk staff auth, token-based parent auth.
+- [KJIHC Mobile App](kjihc-mobile.md) — Expo React Native companion; Clerk v4 Core v3 API, custom parent auth via AsyncStorage, Orval-generated hooks with {data:...} mutation pattern.
+- [events.ts merge corruption](events-ts-merge-corruption.md) — GET /events handler broken repeatedly by task merges; always same two lines dropped; use Python not Edit to fix (Unicode em-dash).
+- [api-zod index.ts types conflict](api-zod-index.md) — Drop types re-export from lib/api-zod/src/index.ts; orval generates same name as both Zod const and TS type causing TS2308 ambiguity.
+- [api-client-react dist build](api-client-react-build.md) — Set noEmitOnError:false in tsconfig.json; messaging.ts has pre-existing react type error that blocks emit otherwise.
+- [express.raw on /api breaks JSON bodies](express-raw-body-bug.md) — raw webhook parser mounted too broadly no-ops all mutations with 200s; scope to exact path. Also DB override + Clerk dev-login testing tips.
+- [Mobile prod Clerk config](mobile-prod-clerk.md) — APK must use pk_live key derived via publishableKeyFromHost('join.kjihc.org') + proxy URL /api/__clerk; pk_test key silently 401s all staff endpoints on prod.
+- [Storage object URLs](storage-object-urls.md) — never `/api/storage/objects/${objectPath}` (double slash 307 drops auth header); strip leading slashes; web parents need blob fetch, not img src.
+- [Age-group casing](age-group-casing.md) — age_group data is mixed-case (u14/U14); always compare via normAgeGroup()/lower(); flags route is per-field authorized (treasurer=fees, registrations=SIHA).
+- [Parent OAuth login](parent-oauth-login.md) — Google/Apple OAuth via expo-auth-session + expo-apple-authentication; server uses google-auth-library + jose; POST /parent/oauth-login issues 30-day session tokens.
+- [Stripe return-URL pattern](stripe-return-urls.md) — checkout success/cancel URLs are server-allowlisted; mobile uses GET /api/pay-return → kjihc-mobile://paid deep link + client polls for webhook latency.
+- [OpenAPI spec is source of truth](openapi-regen.md) — never hand-edit generated api clients; orval regen wipes them (playerPhoto incident); add fields to openapi.yaml, regen, re-drop types re-export.
+- [Public club-info allowlist](club-info-allowlist.md) — GET /join/club-info once dumped ALL settings publicly; now allowlists bank_/heja/club_/stripe_publishable_key. Never add secrets to kjihc_settings without checking this.

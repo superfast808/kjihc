@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1040003568393",
+    "project_id": "kjihc-e3cbf",
+    "storage_bucket": "kjihc-e3cbf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1040003568393:android:2736a754d872ef337539d8",
+        "android_client_info": {
+          "package_name": "org.kjihc.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsoAW1vtNnQGVG57vcb69QOfI9bngwDsU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

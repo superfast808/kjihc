@@ -1,0 +1,45 @@
+modules = ["nodejs-24", "python-base-3.13", "postgresql-16"]
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[nix]
+channel = "stable-25_05"
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 80
+
+[[ports]]
+localPort = 19919
+externalPort = 3001
+
+[userenv]
+
+[userenv.production]
+APP_URL = "https://join.kjihc.org"
+
+[userenv.shared]
+VAPID_EMAIL = "info@kjihc.co.uk"
+VAPID_PRIVATE_KEY = "JHZFfddocx-_qy-k1xie4xKKCqIR2A5eZm6UKQE9oDg"
+VAPID_PUBLIC_KEY = "BD4YFTv6rALyMDUiZ7ln8nDjhSTnoaq4zQGju45Ho7VGNgIzXCZbe9XvATx140JmyAskORaI9daUyERUzv9IU3c"

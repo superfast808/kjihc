@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 14.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_DOMAIN": "join.kjihc.org",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuam9pbi5ramloYy5vcmck",
+        "EXPO_PUBLIC_CLERK_PROXY_URL": "https://join.kjihc.org/api/__clerk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_DOMAIN": "join.kjihc.org",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuam9pbi5ramloYy5vcmck",
+        "EXPO_PUBLIC_CLERK_PROXY_URL": "https://join.kjihc.org/api/__clerk"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

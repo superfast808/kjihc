@@ -1,0 +1,46 @@
+import { Router } from "express";
+import healthRouter from "./health";
+import dashboardRouter from "./dashboard";
+import membersRouter from "./members";
+import staffRouter from "./staff";
+import signinsRouter from "./signins";
+import ensignRouter from "./ensign";
+import joinRouter from "./join";
+import parentRouter from "./parent";
+import housekeepingRouter from "./housekeeping";
+import settingsRouter from "./settings";
+import eventsRouter from "./events";
+import channelsRouter from "./channels";
+import messagesRouter from "./messages";
+import uploadRouter from "./upload";
+import conductReminderRouter from "./conductReminder";
+import documentsRouter from "./documents";
+import auditRouter from "./audit";
+import feePaymentsRouter from "./feePayments";
+import equalOpsRouter from "./equalOps";
+import sihaRouter from "./siha";
+
+const router = Router();
+
+router.use(healthRouter);
+router.use(dashboardRouter);
+router.use(membersRouter);
+router.use(staffRouter);
+router.use(signinsRouter);
+router.use(ensignRouter);
+router.use(joinRouter);
+router.use(parentRouter);
+router.use(housekeepingRouter);
+router.use(settingsRouter);
+router.use(eventsRouter);
+router.use(channelsRouter);
+router.use(messagesRouter);
+router.use(uploadRouter);
+router.use(conductReminderRouter);
+router.use(documentsRouter);
+router.use(auditRouter);
+router.use(feePaymentsRouter);
+router.use(equalOpsRouter);
+router.use(sihaRouter);
+
+export default router;

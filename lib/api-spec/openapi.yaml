@@ -1,0 +1,1711 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: KJIHC Club Management API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: members
+    description: Player/member management
+  - name: staff
+    description: Staff management
+  - name: signins
+    description: Training sign-ins and attendance
+  - name: dashboard
+    description: Dashboard summaries
+  - name: ensign
+    description: Ensign Ewart tournament entries
+  - name: join
+    description: Public player registration
+  - name: parent
+    description: Parent portal
+  - name: events
+    description: Club events, training sessions and games
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ─── DASHBOARD ───────────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Club-wide summary stats
+      security: [{ ClerkAuth: [] }]
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/attendance-trend:
+    get:
+      operationId: getAttendanceTrend
+      tags: [dashboard]
+      summary: Attendance count per week for last 8 weeks
+      security: [{ ClerkAuth: [] }]
+      responses:
+        "200":
+          description: Weekly attendance
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendancePoint"
+
+  /dashboard/age-group-breakdown:
+    get:
+      operationId: getAgeGroupBreakdown
+      tags: [dashboard]
+      summary: Member count by age group
+      security: [{ ClerkAuth: [] }]
+      responses:
+        "200":
+          description: Age group counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgeGroupCount"
+
+  /dashboard/recent-signins:
+    get:
+      operationId: getRecentSignins
+      tags: [dashboard]
+      summary: Latest 20 sign-in events
+      security: [{ ClerkAuth: [] }]
+      responses:
+        "200":
+          description: Recent sign-ins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SigninEvent"
+
+  # ─── MEMBERS ─────────────────────────────────────────────────────────────
+  /members:
+    get:
+      operationId: listMembers
+      tags: [members]
+      summary: List all members (filtered by staff access)
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: ageGroup
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: flag
+          in: query
+          schema:
+            type: string
+            enum: [fees_overdue, not_siha, no_photo]
+      responses:
+        "200":
+          description: Member list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Member"
+
+  /members/{id}:
+    get:
+      operationId: getMember
+      tags: [members]
+      summary: Get full member details (including medical)
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Member detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateMember
+      tags: [members]
+      summary: Update member details
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberUpdate"
+      responses:
+        "200":
+          description: Updated member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberDetail"
+    delete:
+      operationId: deleteMember
+      tags: [members]
+      summary: Delete a member
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+
+  /members/{id}/flags:
+    patch:
+      operationId: updateMemberFlags
+      tags: [members]
+      summary: Set admin flags (SIHA registered, fees overdue) and optionally email the parent
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberFlagsUpdate"
+      responses:
+        "200":
+          description: Flags updated
+
+  /members/{id}/age-group:
+    patch:
+      operationId: updateMemberAgeGroup
+      tags: [members]
+      summary: Update member age group
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgeGroupUpdate"
+      responses:
+        "200":
+          description: Updated
+
+  # ─── STAFF ───────────────────────────────────────────────────────────────
+  /staff:
+    get:
+      operationId: listStaff
+      tags: [staff]
+      summary: List all staff (superuser only)
+      security: [{ ClerkAuth: [] }]
+      responses:
+        "200":
+          description: Staff list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StaffMember"
+    post:
+      operationId: createStaff
+      tags: [staff]
+      summary: Add a new staff member
+      security: [{ ClerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StaffInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffMember"
+
+  /staff/me:
+    get:
+      operationId: getMyStaffProfile
+      tags: [staff]
+      summary: Get current user's staff profile and access level
+      security: [{ ClerkAuth: [] }]
+      responses:
+        "200":
+          description: My profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffProfile"
+        "404":
+          description: Not a staff member
+
+  /staff/{id}:
+    patch:
+      operationId: updateStaff
+      tags: [staff]
+      summary: Update staff member
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StaffUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffMember"
+    delete:
+      operationId: deleteStaff
+      tags: [staff]
+      summary: Remove a staff member
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── SIGN-INS ────────────────────────────────────────────────────────────
+  /signins:
+    get:
+      operationId: listSignins
+      tags: [signins]
+      summary: Query sign-in records with filters
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: session
+          in: query
+          schema:
+            type: string
+        - name: ageGroup
+          in: query
+          schema:
+            type: string
+        - name: memberId
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Sign-in records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SigninRecord"
+    post:
+      operationId: submitSignins
+      tags: [signins]
+      summary: Submit sign-in sheet for a session
+      security: [{ ClerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninBatch"
+      responses:
+        "201":
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigninBatchResult"
+
+  /signins/sessions:
+    get:
+      operationId: listSessions
+      tags: [signins]
+      summary: List distinct training session names
+      security: [{ ClerkAuth: [] }]
+      responses:
+        "200":
+          description: Session names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /signins/attendance-summary:
+    get:
+      operationId: getAttendanceSummary
+      tags: [signins]
+      summary: Per-member attendance rate for a date range
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+        - name: session
+          in: query
+          schema:
+            type: string
+        - name: ageGroup
+          in: query
+          schema:
+            type: string
+        - name: eventId
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Attendance summary per member
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberAttendance"
+
+  # ─── ENSIGN EWART ─────────────────────────────────────────────────────────
+  /ensign:
+    get:
+      operationId: listEnsignEntries
+      tags: [ensign]
+      summary: List Ensign Ewart entries
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: ageGroup
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnsignEntry"
+    post:
+      operationId: createEnsignEntry
+      tags: [ensign]
+      summary: Submit a new Ensign Ewart entry (public)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnsignInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnsignEntry"
+
+  /ensign/{id}/payment:
+    patch:
+      operationId: updateEnsignPayment
+      tags: [ensign]
+      summary: Update payment status
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentStatusUpdate"
+      responses:
+        "200":
+          description: Updated
+
+  # ─── PUBLIC JOIN ──────────────────────────────────────────────────────────
+  /join:
+    post:
+      operationId: submitJoin
+      tags: [join]
+      summary: Submit new player registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JoinResult"
+
+  /join/fees:
+    get:
+      operationId: listFees
+      tags: [join]
+      summary: List membership fee tiers (public)
+      responses:
+        "200":
+          description: Fee tiers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeeTier"
+
+  /join/heja-codes:
+    get:
+      operationId: listHejaCodes
+      tags: [join]
+      summary: List Heja app invite codes (public)
+      responses:
+        "200":
+          description: Heja codes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HejaCode"
+
+  # ─── PARENT PORTAL ────────────────────────────────────────────────────────
+  /parent/request-link:
+    post:
+      operationId: requestParentLink
+      tags: [parent]
+      summary: Request a magic login link via email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParentLinkRequest"
+      responses:
+        "200":
+          description: Link sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResult"
+
+  /parent/verify-token:
+    post:
+      operationId: verifyParentToken
+      tags: [parent]
+      summary: Verify a magic link token and return session data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParentTokenVerify"
+      responses:
+        "200":
+          description: Verified, returns children data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParentSession"
+        "401":
+          description: Invalid or expired token
+
+  /parent/oauth-login:
+    post:
+      operationId: parentOauthLogin
+      tags: [parent]
+      summary: Sign in with Google or Apple ID token and return a parent session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParentOauthLoginRequest"
+      responses:
+        "200":
+          description: Verified, returns session token and children data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParentOauthSession"
+        "401":
+          description: Email not registered with the club
+        "400":
+          description: Invalid or unverifiable ID token
+
+  /parent/children:
+    get:
+      operationId: getParentChildren
+      tags: [parent]
+      summary: Get children for a parent (token auth via query param)
+      parameters:
+        - name: token
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Children list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberDetail"
+        "401":
+          description: Invalid or expired token
+
+  /parent/children/{id}/attendance:
+    get:
+      operationId: getParentChildAttendance
+      tags: [parent]
+      summary: Get current-season attendance stats for a child (parent token auth)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: token
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Attendance stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChildAttendanceStats"
+        "401":
+          description: Invalid or expired token
+        "403":
+          description: Not authorized
+
+  /parent/children/{id}:
+    patch:
+      operationId: parentPatchChild
+      tags: [parent]
+      summary: Parent updates their child's details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParentChildUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberDetail"
+        "401":
+          description: Invalid token
+
+  # ─── EVENTS ───────────────────────────────────────────────────────────────
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List events (filtered by age group, type, upcoming/past)
+      parameters:
+        - name: ageGroup
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: upcoming
+          in: query
+          schema:
+            type: string
+        - name: token
+          in: query
+          schema:
+            type: string
+        - name: memberId
+          in: query
+          schema:
+            type: number
+          description: When provided with token, computes myRsvp for this specific child only (validated against the token)
+      responses:
+        "200":
+          description: Event list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create a new event (staff only)
+      security: [{ ClerkAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+
+  /events/{id}:
+    get:
+      operationId: getEvent
+      tags: [events]
+      summary: Get a single event with roster and RSVP list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Event detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateEvent
+      tags: [events]
+      summary: Update an event (staff only)
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete an event (staff only)
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+
+  /events/{id}/roster:
+    get:
+      operationId: getEventRoster
+      tags: [events]
+      summary: Get the selected roster for an event (staff only)
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Roster members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RosterMember"
+    put:
+      operationId: setEventRoster
+      tags: [events]
+      summary: Replace the selected roster for an event (staff only)
+      security: [{ ClerkAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RosterUpdate"
+      responses:
+        "200":
+          description: Updated
+
+  /events/{id}/rsvp:
+    get:
+      operationId: getEventRsvp
+      tags: [events]
+      summary: Get RSVP summary for an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: RSVP summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RsvpSummary"
+    post:
+      operationId: setEventRsvp
+      tags: [events]
+      summary: Set RSVP for a child (parent token auth)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RsvpInput"
+      responses:
+        "200":
+          description: RSVP saved
+        "401":
+          description: Invalid token
+
+components:
+  securitySchemes:
+    ClerkAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    # ─── DASHBOARD ───────────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      required: [totalMembers, activeMembers, sessionsThisMonth, membersWithMedical, ageGroupCounts]
+      properties:
+        totalMembers:
+          type: number
+        activeMembers:
+          type: number
+        sessionsThisMonth:
+          type: number
+        membersWithMedical:
+          type: number
+        ageGroupCounts:
+          type: object
+          additionalProperties:
+            type: number
+
+    AttendancePoint:
+      type: object
+      required: [week, count]
+      properties:
+        week:
+          type: string
+        count:
+          type: number
+
+    AgeGroupCount:
+      type: object
+      required: [ageGroup, count]
+      properties:
+        ageGroup:
+          type: string
+        count:
+          type: number
+
+    SigninEvent:
+      type: object
+      required: [id, memberName, session, date]
+      properties:
+        id:
+          type: number
+        memberName:
+          type: string
+        session:
+          type: string
+        date:
+          type: string
+        missReason:
+          type: ["string", "null"]
+
+    # ─── MEMBER ─────────────────────────────────────────────────────────
+    Member:
+      type: object
+      required: [id, playerName, ageGroup, playerParent, playerContactTel, playerEmail]
+      properties:
+        id:
+          type: number
+        playerName:
+          type: string
+        playerDob:
+          type: ["string", "null"]
+        ageGroup:
+          type: string
+        addAgeGroup:
+          type: ["string", "null"]
+        playerParent:
+          type: string
+        playerContactTel:
+          type: string
+        playerEmail:
+          type: string
+        playerMedicalnotes:
+          type: ["string", "null"]
+        playerMedication:
+          type: ["string", "null"]
+        playerFee:
+          type: ["number", "null"]
+        agreeFee:
+          type: ["number", "null"]
+        agreeGdpr:
+          type: ["number", "null"]
+        agreePhoto:
+          type: ["number", "null"]
+        readCode:
+          type: ["number", "null"]
+        sihaRegistered:
+          type: number
+        feesOverdue:
+          type: number
+        playerNumber:
+          type: ["number", "null"]
+        playerPhoto:
+          type: ["string", "null"]
+        sihaNumber:
+          type: ["string", "null"]
+
+    MemberDetail:
+      type: object
+      required: [id, playerName, ageGroup, playerParent, playerContactTel, playerEmail]
+      properties:
+        id:
+          type: number
+        playerName:
+          type: string
+        playerDob:
+          type: ["string", "null"]
+        ageGroup:
+          type: string
+        addAgeGroup:
+          type: ["string", "null"]
+        playerAddress1:
+          type: ["string", "null"]
+        playerAddress2:
+          type: ["string", "null"]
+        playerCity:
+          type: ["string", "null"]
+        playerPost:
+          type: ["string", "null"]
+        playerParent:
+          type: string
+        playerContactTel:
+          type: string
+        playerEmail:
+          type: string
+        playerMedicalnotes:
+          type: ["string", "null"]
+        playerMedication:
+          type: ["string", "null"]
+        playerFee:
+          type: ["number", "null"]
+        agreeFee:
+          type: ["number", "null"]
+        agreeGdpr:
+          type: ["number", "null"]
+        agreePhoto:
+          type: ["number", "null"]
+        readCode:
+          type: ["number", "null"]
+        sihaRegistered:
+          type: number
+        feesOverdue:
+          type: number
+        playerNumber:
+          type: ["number", "null"]
+        playerPhoto:
+          type: ["string", "null"]
+        sihaNumber:
+          type: ["string", "null"]
+        medicalUpdatedByParentAt:
+          type: ["string", "null"]
+
+    MemberFlagsUpdate:
+      type: object
+      properties:
+        sihaRegistered:
+          type: number
+        feesOverdue:
+          type: number
+        playerNumber:
+          type: ["number", "null"]
+        sendEmail:
+          type: boolean
+
+    MemberUpdate:
+      type: object
+      properties:
+        playerName:
+          type: string
+        playerDob:
+          type: string
+        ageGroup:
+          type: string
+        addAgeGroup:
+          type: string
+        playerAddress1:
+          type: string
+        playerAddress2:
+          type: string
+        playerCity:
+          type: string
+        playerPost:
+          type: string
+        playerParent:
+          type: string
+        playerContactTel:
+          type: string
+        playerEmail:
+          type: string
+        playerMedicalnotes:
+          type: string
+        playerMedication:
+          type: string
+        playerFee:
+          type: number
+        agreeFee:
+          type: number
+        agreeGdpr:
+          type: number
+        agreePhoto:
+          type: number
+        readCode:
+          type: number
+        playerNumber:
+          type: ["number", "null"]
+        sihaNumber:
+          type: ["string", "null"]
+
+    AgeGroupUpdate:
+      type: object
+      required: [ageGroup]
+      properties:
+        ageGroup:
+          type: string
+        addAgeGroup:
+          type: ["string", "null"]
+
+    # ─── STAFF ──────────────────────────────────────────────────────────
+    StaffMember:
+      type: object
+      required: [id, staffName, staffEmail, staffLevel]
+      properties:
+        id:
+          type: number
+        staffName:
+          type: string
+        staffEmail:
+          type: string
+        staffLevel:
+          type: string
+        staffRoles:
+          type: string
+
+    StaffProfile:
+      type: object
+      required: [id, staffName, staffEmail, staffLevel, isSuperUser, allowedGroups]
+      properties:
+        id:
+          type: number
+        staffName:
+          type: string
+        staffEmail:
+          type: string
+        staffLevel:
+          type: string
+        staffRoles:
+          type: string
+        isSuperUser:
+          type: boolean
+        isCoach:
+          type: boolean
+        isTreasurer:
+          type: boolean
+        isRegistrations:
+          type: boolean
+        allowedGroups:
+          type: array
+          items:
+            type: string
+        roles:
+          type: array
+          items:
+            type: string
+
+    StaffInput:
+      type: object
+      required: [staffName, staffEmail, staffLevel]
+      properties:
+        staffName:
+          type: string
+        staffEmail:
+          type: string
+        staffLevel:
+          type: string
+        staffRoles:
+          type: string
+
+    StaffUpdate:
+      type: object
+      properties:
+        staffName:
+          type: string
+        staffEmail:
+          type: string
+        staffLevel:
+          type: string
+        staffRoles:
+          type: string
+
+    # ─── SIGN-INS ────────────────────────────────────────────────────────
+    SigninRecord:
+      type: object
+      required: [id, memberId, memberName, session, date]
+      properties:
+        id:
+          type: number
+        memberId:
+          type: number
+        memberName:
+          type: string
+        session:
+          type: string
+        date:
+          type: string
+        missReason:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        eventId:
+          type: ["number", "null"]
+        eventTitle:
+          type: ["string", "null"]
+
+    SigninEntry:
+      type: object
+      required: [memberId, status]
+      properties:
+        memberId:
+          type: number
+        status:
+          type: string
+          enum: [yes, no, na]
+        missReason:
+          type: ["string", "null"]
+
+    SigninBatch:
+      type: object
+      required: [session, date, entries]
+      properties:
+        session:
+          type: string
+        date:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/SigninEntry"
+        eventId:
+          type: number
+
+    SigninBatchResult:
+      type: object
+      required: [saved]
+      properties:
+        saved:
+          type: number
+
+    AbsenceDetail:
+      type: object
+      required: [date, session, reason]
+      properties:
+        date:
+          type: string
+        session:
+          type: string
+        reason:
+          type: string
+        eventTitle:
+          type: ["string", "null"]
+
+    MemberAttendance:
+      type: object
+      required: [memberId, memberName, ageGroup, attended, total, rate]
+      properties:
+        memberId:
+          type: number
+        memberName:
+          type: string
+        ageGroup:
+          type: string
+        attended:
+          type: number
+        total:
+          type: number
+        rate:
+          type: number
+        absences:
+          type: array
+          items:
+            $ref: "#/components/schemas/AbsenceDetail"
+
+    # ─── ENSIGN EWART ────────────────────────────────────────────────────
+    EnsignEntry:
+      type: object
+      required: [id, ageGroup, clubName, teamName, paymentStatus, createdAt]
+      properties:
+        id:
+          type: number
+        ageGroup:
+          type: string
+        clubName:
+          type: string
+        teamName:
+          type: string
+        shirtColourHome:
+          type: string
+        shirtColourAway:
+          type: string
+        numCoachesOfficials:
+          type: string
+        seniorContactName:
+          type: string
+        seniorContactPhoneEmail:
+          type: string
+        bookingContactName:
+          type: string
+        bookingContactPhone:
+          type: string
+        bookingContactEmail:
+          type: string
+        managerName:
+          type: string
+        managerPhone:
+          type: string
+        managerEmail:
+          type: string
+        remarks:
+          type: ["string", "null"]
+        paymentStatus:
+          type: number
+        signature:
+          type: string
+        printName:
+          type: string
+        positionInClub:
+          type: string
+        dateSigned:
+          type: string
+        createdAt:
+          type: string
+
+    EnsignInput:
+      type: object
+      required: [ageGroup, clubName, teamName, shirtColourHome, shirtColourAway, numCoachesOfficials, seniorContactName, seniorContactPhoneEmail, bookingContactName, bookingContactPhone, bookingContactEmail, managerName, managerPhone, managerEmail, signature, printName, positionInClub, dateSigned]
+      properties:
+        ageGroup:
+          type: string
+        clubName:
+          type: string
+        teamName:
+          type: string
+        shirtColourHome:
+          type: string
+        shirtColourAway:
+          type: string
+        numCoachesOfficials:
+          type: string
+        seniorContactName:
+          type: string
+        seniorContactPhoneEmail:
+          type: string
+        bookingContactName:
+          type: string
+        bookingContactPhone:
+          type: string
+        bookingContactEmail:
+          type: string
+        managerName:
+          type: string
+        managerPhone:
+          type: string
+        managerEmail:
+          type: string
+        remarks:
+          type: string
+        signature:
+          type: string
+        printName:
+          type: string
+        positionInClub:
+          type: string
+        dateSigned:
+          type: string
+
+    PaymentStatusUpdate:
+      type: object
+      required: [paymentStatus]
+      properties:
+        paymentStatus:
+          type: number
+
+    # ─── JOIN ────────────────────────────────────────────────────────────
+    JoinInput:
+      type: object
+      required: [playerName, playerDob, ageGroup, playerAddress1, playerCity, playerPost, playerParent, playerContactTel, playerEmail, playerFee, readCode, agreeFee, agreeGdpr, agreePhoto]
+      properties:
+        playerName:
+          type: string
+        playerDob:
+          type: string
+        ageGroup:
+          type: string
+        playerAddress1:
+          type: string
+        playerAddress2:
+          type: string
+        playerCity:
+          type: string
+        playerPost:
+          type: string
+        playerParent:
+          type: string
+        playerContactTel:
+          type: string
+        playerEmail:
+          type: string
+        playerMedicalnotes:
+          type: string
+        playerMedication:
+          type: string
+        playerFee:
+          type: number
+        readCode:
+          type: number
+        agreeFee:
+          type: number
+        agreeGdpr:
+          type: number
+        agreePhoto:
+          type: number
+
+    JoinResult:
+      type: object
+      required: [id, message]
+      properties:
+        id:
+          type: number
+        message:
+          type: string
+
+    FeeTier:
+      type: object
+      required: [id, feeGroup, feeAmount]
+      properties:
+        id:
+          type: number
+        feeGroup:
+          type: string
+        feeAmount:
+          type: string
+
+    HejaCode:
+      type: object
+      required: [id, codeGroup, codeCode]
+      properties:
+        id:
+          type: number
+        codeGroup:
+          type: string
+        codeCode:
+          type: string
+
+    # ─── PARENT ─────────────────────────────────────────────────────────
+    ParentLinkRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+
+    MessageResult:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    ParentTokenVerify:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+
+    ParentChildUpdate:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+        playerName:
+          type: string
+        playerDob:
+          type: string
+        playerAddress1:
+          type: string
+        playerAddress2:
+          type: string
+        playerCity:
+          type: string
+        playerPost:
+          type: string
+        playerParent:
+          type: string
+        playerContactTel:
+          type: string
+        playerEmail:
+          type: string
+        playerMedicalnotes:
+          type: string
+        playerMedication:
+          type: string
+        agreeFee:
+          type: number
+        agreeGdpr:
+          type: number
+        agreePhoto:
+          type: number
+        readCode:
+          type: number
+
+    ChildAttendanceStats:
+      type: object
+      required: [memberId, playerName, attended, total, currentSeason]
+      properties:
+        memberId:
+          type: number
+        playerName:
+          type: string
+        attended:
+          type: number
+        total:
+          type: number
+        currentSeason:
+          type: string
+
+    ParentSession:
+      type: object
+      required: [email, children]
+      properties:
+        email:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemberDetail"
+
+    ParentOauthLoginRequest:
+      type: object
+      required: [provider, idToken]
+      properties:
+        provider:
+          type: string
+          enum: [google, apple]
+        idToken:
+          type: string
+
+    ParentOauthSession:
+      type: object
+      required: [email, token, children]
+      properties:
+        email:
+          type: string
+        token:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemberDetail"
+
+    # ─── EVENTS ──────────────────────────────────────────────────────────
+    RsvpCounts:
+      type: object
+      required: [yes, no, maybe]
+      properties:
+        yes:
+          type: number
+        no:
+          type: number
+        maybe:
+          type: number
+
+    Event:
+      type: object
+      required: [id, title, eventType, eventDate, startTime, locationName, meetOffsetMins, ageGroups, isRosterRestricted]
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        eventType:
+          type: string
+        eventDate:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: ["string", "null"]
+        locationName:
+          type: string
+        locationLat:
+          type: ["number", "null"]
+        locationLng:
+          type: ["number", "null"]
+        meetOffsetMins:
+          type: number
+        ageGroups:
+          type: string
+        notes:
+          type: ["string", "null"]
+        isRosterRestricted:
+          type: number
+        createdByStaffId:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        rsvpCounts:
+          $ref: "#/components/schemas/RsvpCounts"
+        myRsvp:
+          type: ["string", "null"]
+        myRsvpReason:
+          type: ["string", "null"]
+
+    EventDetail:
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            rosterMemberIds:
+              type: array
+              items:
+                type: number
+            rsvpList:
+              type: array
+              items:
+                $ref: "#/components/schemas/RsvpResponse"
+
+    EventInput:
+      type: object
+      required: [title, eventType, eventDate, startTime, locationName, meetOffsetMins, ageGroups]
+      properties:
+        title:
+          type: string
+        eventType:
+          type: string
+        eventDate:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: ["string", "null"]
+        locationName:
+          type: string
+        locationLat:
+          type: ["number", "null"]
+        locationLng:
+          type: ["number", "null"]
+        meetOffsetMins:
+          type: number
+        ageGroups:
+          type: string
+        notes:
+          type: ["string", "null"]
+        isRosterRestricted:
+          type: number
+
+    RosterMember:
+      type: object
+      required: [memberId, playerName, ageGroup]
+      properties:
+        memberId:
+          type: number
+        playerName:
+          type: string
+        ageGroup:
+          type: string
+
+    RosterUpdate:
+      type: object
+      required: [memberIds]
+      properties:
+        memberIds:
+          type: array
+          items:
+            type: number
+
+    RsvpResponse:
+      type: object
+      required: [memberId, status, playerName, playerParent]
+      properties:
+        memberId:
+          type: number
+        status:
+          type: string
+        playerName:
+          type: string
+        playerParent:
+          type: string
+
+    RsvpSummary:
+      type: object
+      required: [counts, responses]
+      properties:
+        counts:
+          $ref: "#/components/schemas/RsvpCounts"
+        responses:
+          type: array
+          items:
+            $ref: "#/components/schemas/RsvpResponse"
+
+    RsvpInput:
+      type: object
+      required: [memberId, status]
+      properties:
+        token:
+          type: string
+        memberId:
+          type: number
+        status:
+          type: string

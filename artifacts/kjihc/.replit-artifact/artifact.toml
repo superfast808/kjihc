@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "KJIHC Club Management"
+description = "Kilmarnock Junior Ice Hockey Club (KJIHC) management system. Handles new player registration (mobile-friendly multi-step wizard), a parent portal for viewing/updating child details and consents, and a staff portal for player management, training sign-ins, attendance reports, Ensign Ewart tournament entries, and staff administration — all with Microsoft SSO for staff and email magic-link login for parents."
+version = "1.0.0"
+id = "artifacts/kjihc"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19919
+
+[services.development]
+run = "pnpm --filter @workspace/kjihc run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/kjihc", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/kjihc/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19919"
+BASE_PATH = "/"

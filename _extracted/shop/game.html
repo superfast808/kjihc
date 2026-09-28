@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>KJIHC Mini Ice Hockey</title>
+<style>
+  :root { 
+    --rink:#dff3ff; 
+    --lines:#004b9b;   /* KJIHC navy blue */
+    --boards:#002b5c; 
+    --iceMark:#004b9b;
+    --player:#004b9b;  /* player jersey blue */
+    --goalie:#ffd166;  /* goalie yellow/gold */
+  }
+  html,body{height:100%;margin:0;background:#0b1e2d;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{display:flex;align-items:center;justify-content:center;height:100%}
+  canvas{background:var(--rink);border:10px solid var(--boards);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .hud{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:.5rem;color:#fff}
+  .topbar{margin-top:.5rem;background:rgba(0,75,155,.9);padding:.4rem .8rem;border-radius:999px;font-weight:600;letter-spacing:.5px}
+  .help{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,43,92,.7);padding:.5rem .75rem;border-radius:10px;font-size:.9rem}
+  .btn{pointer-events:auto;cursor:pointer;border:0;border-radius:12px;padding:.6rem .9rem;font-weight:700}
+  .start{margin-top:10vh;background:#004b9b;color:#fff;box-shadow:0 6px 20px rgba(0,75,155,.4)}
+  .paused{margin-top:1rem;background:#ffd166;color:#2d1600}
+  .title{pointer-events:none;text-align:center;margin-top:6vh;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+</style>
+</head>
+<body>
+<div class="wrap"><canvas id="game" width="1000" height="520"></canvas></div>
+
+<div class="hud">
+  <div class="title">
+    <h1 style="margin:.2rem 0;">KJIHC Mini Ice Hockey</h1>
+    <div style="opacity:.85">WASD/Arrows to move · Space to shoot · P to pause</div>
+    <button id="startBtn" class="btn start">Start Game</button>
+    <button id="pauseBtn" class="btn paused" style="display:none">Resume (P)</button>
+  </div>
+  <div class="topbar" id="scoreBox">KJIHC 0 — 0 Goalie · 00:00</div>
+  <div class="help">Play in KJIHC colours! 🏒</div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreBox = document.getElementById('scoreBox');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+
+  function fit() {
+    const maxW = Math.min(window.innerWidth - 24, 1200);
+    const aspect = 1000/520;
+    let w = maxW, h = w/aspect;
+    if (h > window.innerHeight - 24) { h = window.innerHeight - 24; w = h*aspect; }
+    canvas.style.width = w+'px'; canvas.style.height = h+'px';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  const state = { w:canvas.width, h:canvas.height, running:false, paused:false, keys:new Set(), youScore:0, aiScore:0, startTime:0, elapsed:0, goalToWin:5, lastGoalTime:0, faceoffDelay:900 };
+
+  const rink = { padding:30, centerLineX:null, goalHalfH:70, goalDepth:14 };
+  rink.centerLineX = state.w/2;
+
+  const player = { x:200, y:state.h/2, r:18, vx:0, vy:0, speed:0.22, max:3.2, angle:0 };
+  const puck   = { x: state.w/2, y: state.h/2, r: 8, vx:0, vy:0 };
+  const goalie = { x: state.w - rink.padding - 8, y: state.h/2, w: 8, h: 80, vy:0, max:2.3 };
+
+  function resetPositions() {
+    player.x = state.w*0.25; player.y = state.h/2; player.vx = player.vy = 0; player.angle = 0;
+    puck.x = state.w/2; puck.y = state.h/2; puck.vx = puck.vy = 0;
+    goalie.y = state.h/2; goalie.vy = 0;
+    state.lastGoalTime = performance.now();
+  }
+
+  function startGame() {
+    state.youScore = 0; state.aiScore = 0; state.startTime = performance.now(); state.elapsed = 0;
+    state.running = true; state.paused = false;
+    startBtn.style.display = 'none'; pauseBtn.style.display = 'inline-block';
+    resetPositions();
+  }
+  function togglePause() {
+    if (!state.running) return;
+    state.paused = !state.paused;
+    pauseBtn.textContent = state.paused ? 'Resume (P)' : 'Pause (P)';
+  }
+
+  startBtn.addEventListener('click', startGame);
+  pauseBtn.addEventListener('click', togglePause);
+
+  // Input
+  const keyMap = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'up', s:'down', a:'left', d:'right' };
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') e.preventDefault();
+    if (keyMap[e.key.toLowerCase()]) state.keys.add(keyMap[e.key.toLowerCase()]);
+    if (e.code === 'Space') shoot();
+    if (e.key.toLowerCase() === 'p') togglePause();
+  });
+  window.addEventListener('keyup', (e) => { if (keyMap[e.key.toLowerCase()]) state.keys.delete(keyMap[e.key.toLowerCase()]); });
+
+  function shoot() {
+    const dx = Math.cos(player.angle), dy = Math.sin(player.angle);
+    const dist = Math.hypot(puck.x - player.x, puck.y - player.y);
+    if (dist < player.r + 14) { puck.vx += dx*6.5; puck.vy += dy*6.5; }
+  }
+
+  function update() {
+    state.elapsed = Math.floor((performance.now() - state.startTime)/1000);
+    // simplified movement + collisions...
+    if (state.keys.has('up')) player.vy -= player.speed;
+    if (state.keys.has('down')) player.vy += player.speed;
+    if (state.keys.has('left')) player.vx -= player.speed;
+    if (state.keys.has('right')) player.vx += player.speed;
+    player.vx *= 0.98; player.vy *= 0.98;
+    player.x += player.vx; player.y += player.vy;
+    puck.x += puck.vx; puck.y += puck.vy; puck.vx *= 0.99; puck.vy *= 0.99;
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,state.w,state.h);
+    // rink
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--lines'); 
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(state.w/2, rink.padding); ctx.lineTo(state.w/2, state.h-rink.padding); ctx.stroke();
+    // player
+    ctx.save(); ctx.translate(player.x, player.y); ctx.fillStyle = 'var(--player)'; ctx.beginPath(); ctx.arc(0,0,player.r,0,Math.PI*2); ctx.fill(); ctx.restore();
+    // goalie
+    ctx.fillStyle = 'var(--goalie)'; ctx.fillRect(goalie.x - goalie.w/2, goalie.y - goalie.h/2, goalie.w, goalie.h);
+    // puck
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(puck.x,puck.y,puck.r,0,Math.PI*2); ctx.fill();
+  }
+
+  function loop() {
+    if (state.running && !state.paused) update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

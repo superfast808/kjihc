@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U12s Tournament Schedule & Rules</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            margin: 2rem 0;
+        }
+
+        .img-container {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        .tournament-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        /* Tabs Styles */
+        .tab-container {
+            width: 90%;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+        }
+
+        .tab-button {
+            background-color: #2c3e50;
+            color: #FFD700;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .tab-button.active {
+            background-color: #374c76;
+        }
+
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Schedule Table Styles */
+        .relative {
+            width: 100%;
+        }
+
+        .table-fixed {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #2c3e50;
+            color: #FFD700;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: center;
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr {
+            background-color: #ffffff;
+        }
+
+        tbody tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        .p-4 {
+            padding: 1rem;
+        }
+
+        .ice-cut{
+            background-color: #e0e0e0;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .tournament-final {
+            font-weight: bolder;
+        }
+
+        .presentations {
+            font-weight: 600;
+            color: #888;
+        }
+
+        /* Rules Styles */
+        h1, h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #FFD700;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-top: 2rem;
+        }
+
+        p, li {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="img-container">
+        <img src="img/KJIHC_beta.png" alt="KJIHC Logo">
+    </div>
+
+    <div class="tournament-title">
+        Ensign Ewart 2025: U12s
+    </div>
+
+    <div class="tab-container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="openTab('schedule')">Schedule</button>
+            <button class="tab-button" onclick="openTab('rules')">Rules</button>
+        </div>
+
+        <div id="schedule" class="tab-content active">
+            <div class="relative overflow-hidden shadow-md rounded-lg">
+                <table class="table-fixed w-full text-left">
+                    <thead class="uppercase">
+                        <tr>
+                            <th class="p-4">Start Time</th>
+                            <th class="p-4">End Time</th>
+                            <th class="p-4">Home Team</th>
+                            <th class="p-4">Away Team</th>
+                        </tr>
+                    </thead>
+                  <tbody>
+  <tr>
+    <td class="p-4">09:00</td>
+    <td class="p-4">09:25</td>
+    <td class="p-4">Kilmarnock</td>
+    <td class="p-4">Widnes Wild Academy</td>
+  </tr>
+  <tr>
+    <td class="p-4">09:30</td>
+    <td class="p-4">09:55</td>
+    <td class="p-4">Billingham Stars Academy</td>
+    <td class="p-4">Kingston Sharks</td>
+  </tr>
+  <tr>
+    <td class="p-4">10:00</td>
+    <td class="p-4">10:25</td>
+    <td class="p-4">Nottingham Lions</td>
+    <td class="p-4">Aberdeen Lynx</td>
+  </tr>
+  <tr>
+    <td class="p-4 ice-cut">10:30</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+  </tr>
+  <tr>
+    <td class="p-4">10:45</td>
+    <td class="p-4">11:10</td>
+    <td class="p-4">Kilmarnock</td>
+    <td class="p-4">Billingham Stars Academy</td>
+  </tr>
+  <tr>
+    <td class="p-4">11:15</td>
+    <td class="p-4">11:40</td>
+    <td class="p-4">Widnes Wild Academy</td>
+    <td class="p-4">Nottingham Lions</td>
+  </tr>
+  <tr>
+    <td class="p-4">11:45</td>
+    <td class="p-4">12:10</td>
+    <td class="p-4">Kingston Sharks</td>
+    <td class="p-4">Aberdeen Lynx</td>
+  </tr>
+  <tr>
+    <td class="p-4 ice-cut">12:15</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+  </tr>
+  <tr>
+    <td class="p-4">12:30</td>
+    <td class="p-4">12:55</td>
+    <td class="p-4">Kilmarnock</td>
+    <td class="p-4">Nottingham Lions</td>
+  </tr>
+  <tr>
+    <td class="p-4">13:00</td>
+    <td class="p-4">13:25</td>
+    <td class="p-4">Widnes Wild Academy</td>
+    <td class="p-4">Billingham Stars Academy</td>
+  </tr>
+  <tr>
+    <td class="p-4">13:30</td>
+    <td class="p-4">13:55</td>
+    <td class="p-4">Nottingham Lions</td>
+    <td class="p-4">Kingston Sharks</td>
+  </tr>
+  <tr>
+    <td class="p-4 ice-cut">14:00</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+  </tr>
+  <tr>
+    <td class="p-4">14:15</td>
+    <td class="p-4">14:40</td>
+    <td class="p-4">Billingham Stars Academy</td>
+    <td class="p-4">Aberdeen Lynx</td>
+  </tr>
+  <tr>
+    <td class="p-4">14:45</td>
+    <td class="p-4">15:10</td>
+    <td class="p-4">Widnes Wild Academy</td>
+    <td class="p-4">Kingston Sharks</td>
+  </tr>
+  <tr>
+    <td class="p-4">15:15</td>
+    <td class="p-4">15:40</td>
+    <td class="p-4">Kilmarnock</td>
+    <td class="p-4">Aberdeen Lynx</td>
+  </tr>
+  <tr>
+    <td class="p-4 ice-cut">15:45</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+  </tr>
+  <tr>
+    <td class="p-4">16:00</td>
+    <td class="p-4">16:25</td>
+    <td class="p-4">Semi-Final 1</td>
+    <td class="p-4">1st Place vs 4th Place</td>
+  </tr>
+  <tr>
+    <td class="p-4">16:30</td>
+    <td class="p-4">16:55</td>
+    <td class="p-4">Semi-Final 2</td>
+    <td class="p-4">2nd Place vs 3rd Place</td>
+  </tr>
+  <tr>
+    <td class="p-4 ice-cut">16:55</td>
+    <td class="p-4 ice-cut">17:10</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+    <td class="p-4 ice-cut">— ICE CUT —</td>
+  </tr>
+  <tr>
+    <td class="p-4 tournament-final">17:25</td>
+    <td class="p-4 tournament-final">17:50</td>
+    <td class="p-4 tournament-final">Final</td>
+    <td class="p-4 tournament-final">Winner SF1 vs Winner SF2</td>
+  </tr>
+  <tr>
+    <td class="p-4 presentations">17:55</td>
+    <td class="p-4"></td>
+    <td class="p-4 presentations">Presentations</td>
+    <td class="p-4 presentations"></td>
+  </tr>
+</tbody>
+				</table>
+            </div>
+        </div>
+
+
+        <div id="rules" class="tab-content">
+            <h2>AGE GROUPS</h2>
+            <p>Players must have been born in the year 2013 at the latest. U12 teams must have a minimum of 10 players and at least 1 netminder and a maximum overall of 17 players (Max 2 netminders). No guest players will be allowed unless agreed with the Tournament Committee in advance. NB: Playing up one age group will be allowed. Authorised playdowns will require the consent of the KJIHC tournament committee. Teams who arrive with less than the minimum bench size must notify the tournament committee ASAP.</p>
+            <h2>TEAMS</h2>
+            <p>Minimum bench size: 10 skaters and 1 netminder. Maximum bench size: 17 Players</p><p>Any team who arrive with less than 10 skaters or lose players due to illness/injury during the tournament will be allocated players. Every team should provide an official team list one week prior to the tournament and notify of any amendments to this upon arrival at the tournament.</p>
+            <h2>FORMAT</h2>
+            <p>Teams will play an initial set of games followed by a medal qualification stage. No puck warm-ups prior to the game and no huddle around the net. Please be ready to take the ice 5 minutes before your scheduled game time. The tournament may run ahead or behind schedule. We will make you aware if there is a substantial amendment to running times. Each game will be 25 minutes rolling clock. No timeouts allowed. </p>
+            <p>If teams are tied on equal points in the round robin competition, the qualifying placing will be decided upon:</p>
+            <ul><li>Head-to-head records</li><li>Goal difference</li><li>Goals scored</li><li>Number of penalties received</li><li>If teams are still tied, the drawing of lots will determine placing.</li></ul>
+            <h2>GAME RULES</h2>
+            <p>The semi-finals will be 25 minutes. There will be a running clock with the last minute of the game played on a stop clock. In the event of a draw, the taking of 3 penalty shots in accordance with IIHF rules will determine the winner. No timeouts allowed.</p>
+            <h2>PRIZES</h2>
+            <p>Trophies and player awards for Top 3 teams. All Star Team Awards (voted by KJIHC Tournament Committee).</p>
+            <h2>BEHAVIOUR</h2>
+            <p>It is the responsibility of each club to ensure that every member of their club is well-behaved (this includes Players, Coaches, Managers, Parents, and Supporters). The tournament organisers have the right to remove anyone from the tournament who is unruly or causes a disturbance. They also have the right to refuse entry to anyone whom they feel is undesirable and likely to cause problems.</p>
+            <p style="text-transform:lowercase;">IT IS PROHIBITED TO PLAY HOCKEY OFF THE ICE IN THE ENTIRE FACILITY. STICKS AND PUCKS MUST REMAIN IN DRESSING ROOMS. ALL DAMAGES MADE ON THE PREMISES OF THE GALLEON WILL BE THE RESPONSIBILITY OF OFFENDING INDIVIDUALS, AND TEAMS WILL BE OBLIGED TO PAY FOR THE DAMAGES WITHOUT DELAY.</p>
+        </div>
+    </div>
+    <script>
+        function openTab(tabName) {
+            let i, tabContent, tabButtons;
+            tabContent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabContent.length; i++) {
+                tabContent[i].style.display = "none";
+            }
+            tabButtons = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].className = tabButtons[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+    "require": {
+        "thenetworg/oauth2-azure": "^2.0",
+		"phpmailer/phpmailer": "^6.0",
+		"dompdf/dompdf":"^2.0"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist"
+    },
+    "minimum-stability": "stable"
+}
